@@ -6,28 +6,46 @@ const path = require('path');
 
 /** ------------------ EXPORTING FUNCTION To upload a file ------------------ **/
 module.exports.upload = async function(req, res) {
-    try {
-        // file is not present
-        if(!req.file) {
-            return res.status(400).send('No files were uploaded.');
-        }
-        // file is not csv
-        if(req.file.mimetype != "text/csv") {
-            return res.status(400).send('Select CSV files only.');
-        }
-        // console.log(req.file);
-        let file = await CSV.create({
-            fileName: req.file.originalname,
-            filePath: req.file.path,
-            file: req.file.filename
-        });
-        return res.redirect('/');
-    } catch (error) {
-        console.log('Error in fileController/upload', error);
-        res.status(500).send('Internal upload server error'+ error.message);
-    }
+    // try {
+    //     // file is not present
+    //     if(!req.file) {
+    //         return res.status(400).send('No files were uploaded.');
+    //     }
+    //     // file is not csv
+    //     if(req.file.mimetype != "text/csv") {
+    //         return res.status(400).send('Select CSV files only.');
+    //     }
+    //     // console.log(req.file);
+    //     let file = await CSV.create({
+    //         fileName: req.file.originalname,
+    //         filePath: req.file.path,
+    //         file: req.file.filename
+    //     });
+    //     return res.redirect('/');
+    // } catch (error) {
+    //     console.log('Error in fileController/upload', error);
+    //     res.status(500).send('Internal upload server error'+ error.message);
+    // }
+      if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+
+  const filePath = req.file.path;
+
+  // Read the contents of the uploaded file
+  fs.createReadStream(filePath)
+    .pipe(csv())
+    .on('data', (row) => {
+      console.log(row); // Output each row as an object
+    })
+    .on('end', () => {
+      // Send response or perform additional actions here
+      res.send('File uploaded and processed successfully.');
+    });
+};
+
    
-}
+
 
 /** ------------------ EXPORTING FUNCTION To open file viewer page ------------------ **/
 module.exports.view = async function(req, res) {
